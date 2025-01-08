@@ -72,6 +72,16 @@ const ChatWindow = ({ username, roomId, socket }) => {
     };
   });
 
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      socket.emit("user_left_room", { username, roomId });
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  });
+
   return (
     <div>
       <div>
