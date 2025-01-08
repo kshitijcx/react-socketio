@@ -10,7 +10,27 @@ const ChatWindow = ({ username, roomId, socket }) => {
   const handleInputChange = (e) => {
     const value = e.target.value;
     setCurrentMessage(value);
+
+    //emit typing activity
+    socket.emit("user_typing", { username, roomId });
   };
+
+  useEffect(() => {
+    //user typing
+    let timer;
+
+    socket.on("user_typing", (username) => {
+      setActivityMsg(`${username} is typing...`);
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        setActivityMsg("");
+      }, 2000);
+    });
+
+    return () => {
+      socket.off("user_typing");
+    };
+  });
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -51,21 +71,25 @@ const ChatWindow = ({ username, roomId, socket }) => {
     return () => {
       socket.off("message");
     };
-  });
+  }, [socket]);
 
   useEffect(() => {
     //nofify the current user that a user has joined
-    socket.on("user_join_room", (message) => {
-      const uuid = uuidv4();
-      setMessages((prevMsgs) => [
-        ...prevMsgs,
-        {
-          id: uuid,
-          text: message,
-          type: "notif",
-        },
-      ]);
-    });
+    socket.on(
+      "user_join_room",
+      (message) => {
+        const uuid = uuidv4();
+        setMessages((prevMsgs) => [
+          ...prevMsgs,
+          {
+            id: uuid,
+            text: message,
+            type: "notif",
+          },
+        ]);
+      },
+      [socket]
+    );
 
     return () => {
       socket.off("user_join_room");
@@ -80,7 +104,7 @@ const ChatWindow = ({ username, roomId, socket }) => {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  });
+  }, [username, roomId]);
 
   return (
     <div>
@@ -110,6 +134,7 @@ const ChatWindow = ({ username, roomId, socket }) => {
             );
           }
         })}
+        <div>{activityMsg}</div>
       </div>
       <form onSubmit={handleSendMessage}>
         <input

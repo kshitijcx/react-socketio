@@ -34,4 +34,8 @@ io.on("connection", (socket) => {
       .to(roomId)
       .emit("message", { username, text: `${username} left`, type: "notif" });
   });
+
+  socket.on("user_typing", ({ username, roomId }) => {
+    socket.to(roomId).emit("user_typing", username);
+  });
 });
