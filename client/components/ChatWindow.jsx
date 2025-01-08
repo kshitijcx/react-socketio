@@ -4,11 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const ChatWindow = ({ username, roomId, socket }) => {
   const [currentMessage, setCurrentMessage] = useState("");
-  const [messages, setMessages] = useState([
-    { id: "1", text: `You have joined the room ${roomId}`, type: "notif" },
-    { id: "2", text: `Hey, there!`, username: "Harish", type: "regular" },
-    { id: "3", text: `Hey! How are you?`, username: "Tarun", type: "regular" },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [activityMsg, setActivityMsg] = useState("");
 
   const handleInputChange = (e) => {
@@ -54,6 +50,25 @@ const ChatWindow = ({ username, roomId, socket }) => {
 
     return () => {
       socket.off("message");
+    };
+  });
+
+  useEffect(() => {
+    //nofify the current user that a user has joined
+    socket.on("user_join_room", (message) => {
+      const uuid = uuidv4();
+      setMessages((prevMsgs) => [
+        ...prevMsgs,
+        {
+          id: uuid,
+          text: message,
+          type: "notif",
+        },
+      ]);
+    });
+
+    return () => {
+      socket.off("user_join_room");
     };
   });
 

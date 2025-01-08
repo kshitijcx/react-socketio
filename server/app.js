@@ -20,7 +20,7 @@ io.on("connection", (socket) => {
   socket.on("user_join_room", (data) => {
     const { username, roomId } = data || {};
     socket.join(roomId);
-    console.log(`${username} joined ${roomId}`);
+    socket.to(roomId).emit("user_join_room",`${username} joined ${roomId}`)
   });
 
   //broadcast message to all users
