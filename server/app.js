@@ -15,10 +15,16 @@ const io = new Server(httpServer, {
 
 io.on("connection", (socket) => {
   console.log(`${socket.id} connected`);
+
   //listen to user joining room
   socket.on("user_join_room", (data) => {
     const { username, roomId } = data || {};
     socket.join(roomId);
-    console.log(`${username} has join ${roomId}`);
+    console.log(`${username} joined ${roomId}`);
+  });
+
+  //broadcast message to all users
+  socket.on("send_message", ({ username, roomId, text }) => {
+    socket.to(roomId).emit("message", { username, text, type: "regular" });
   });
 });
